@@ -1,0 +1,67 @@
+package Example;
+
+import java_cup.runtime.*;
+
+parser code {:
+	public static void main(String args[]) throws Exception {
+		SymbolFactory sf = new DefaultSymbolFactory();
+		if (args.length==0) new Parser(new Scanner(System.in,sf),sf).parse();
+		else new Parser(new Scanner(new java.io.FileInputStream(args[0]),sf),sf).parse();
+	}
+:}
+
+
+/* JSON text format has a syntax of braces, colons and commas which facilitate structured data interchange; these are the six structural tokens for JSON text.
+JSON terminal declarations are below  */
+
+terminal COMMA, LSQBRACKET, RSQBRACKET, COLON, LCBRACE, RCBRACE;
+
+//different value types in JSON
+
+terminal String STRING; //a name in JSON is a STRING
+terminal Double NUMBER;
+terminal Boolean BOOLEAN;
+terminal NULL;
+
+/* declaring the non-terminals*/
+non terminal array, value_list, value, object, pair, pair_list, json;
+//non terminal expr;
+
+
+/* Here are the grammar rules/productions for valid JSON based on the JSON specification:
+http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf */
+
+//this allows an object or an array outside an object to be parsed
+json::= object|array {: System.out.println("JSON item parsed!"); :};
+
+/*Valid JSON object: 
+Minimal object is {}; JSON objects are represented by a pair of {} surrounding 0 or more name/value pairs.*/
+
+object::= LCBRACE RCBRACE | LCBRACE pair_list RCBRACE {: System.out.println("Object parsed!"); :};
+
+/*Minimal array is []. Valid array is a pair of square brackets surrouding 0 or more comma-separated values*/
+array ::= LSQBRACKET RSQBRACKET | LSQBRACKET value_list RSQBRACKET {: System.out.println("Array parsed!"); :};
+
+/* Valid pair list can be one pair(key:value) or a list of comma
+separated pairs (e.g. {"name":miguel, "age":21}  */
+pair_list::= pair_list COMMA pair|pair {: System.out.println("Pair list parsed!"); :};
+
+/*Valid key-value pair has the following format: STRING : value */
+pair::= STRING COLON value {: System.out.println("Pair parsed!"); :};
+
+
+/*Value list can be either one value or multiple values separated by commas*/
+value_list ::= value_list COMMA value | value {: System.out.println("Value List parsed!"); :};
+
+
+
+/* Valid JSON values can be: (examples are in brackets) an object({"day": 17}), array([1,2,3]), number(10.5), string ("Hello"), true/false (boolean) or null */
+value::= STRING|NUMBER|BOOLEAN|NULL|array|object {: System.out.println("Value was parsed!"); :};
+
+/*value ::= expr:e {: System.out.println("Parsing Successful!"); :} ;
+expr	::= array:n {: RESULT=n; System.out.println("Array found"); :}|
+            object:n {: RESULT=n; System.out.println("Object found"); :}|
+            STRING:n {: RESULT=n; System.out.println("String found"); :}|
+            NUMBER:n {: RESULT=n; System.out.println("Number found"); :}|
+            BOOLEAN:n {: RESULT=n; System.out.println("Boolean found"); :}|
+            NULL:n {: RESULT=n; System.out.println("Null found"); :};*/
